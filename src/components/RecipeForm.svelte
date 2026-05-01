@@ -30,7 +30,11 @@
     '其他'
   ]
   
-  let coverImageInputType = formData.coverImage ? 'url' : 'url'
+  function isBase64Image(image) {
+    return image && image.startsWith('data:image')
+  }
+  
+  let coverImageInputType = isBase64Image(formData.coverImage) ? 'upload' : 'url'
   let imagePreview = formData.coverImage || ''
   let errors = {}
   

@@ -235,9 +235,11 @@
   }
 
   .favorite-btn.active {
-    background: linear-gradient(135deg, #FFF0F0 0%, #FFE4E4 100%);
-    border-color: #FF6B81;
-    color: #FF4757;
+    background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+    border-color: #FF4757;
+    color: white;
+    box-shadow: 0 4px 14px rgba(255, 71, 87, 0.4);
+    transform: scale(1.02);
   }
 
   .edit-btn, .delete-btn {
