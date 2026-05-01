@@ -156,6 +156,7 @@
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    padding-top: 24px;
   }
 
   .cover-image-container {
@@ -164,7 +165,8 @@
     overflow: hidden;
     border-top-left-radius: var(--radius-lg);
     border-top-right-radius: var(--radius-lg);
-    margin-bottom: 20px;
+    margin-top: -24px;
+    margin-bottom: 16px;
   }
 
   .cover-image {
