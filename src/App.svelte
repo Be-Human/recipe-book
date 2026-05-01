@@ -46,12 +46,12 @@
   </header>
 
   {#if currentView === 'list'}
-    <RecipeList on:view={handleViewRecipe} />
+    <RecipeList on:view={(e) => handleViewRecipe(e.detail)} />
   {:else if currentView === 'detail'}
     <RecipeDetail 
       recipe={selectedRecipe} 
       on:back={handleBack}
-      on:edit={handleEditRecipe}
+      on:edit={(e) => handleEditRecipe(e.detail)}
     />
   {:else if currentView === 'form'}
     <RecipeForm 
@@ -66,7 +66,7 @@
   main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 24px;
     min-height: 100vh;
   }
 
@@ -74,42 +74,61 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 32px;
+    padding: 20px 24px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
   }
 
   h1 {
     margin: 0;
-    color: #2c3e50;
-    font-size: 2.5rem;
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: 700;
   }
 
   .add-btn {
-    background-color: #e74c3c;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background-color 0.3s;
-    font-weight: bold;
+    transition: var(--transition);
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
   }
 
   .add-btn:hover {
-    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+  }
+
+  .add-btn:active {
+    transform: translateY(0);
   }
 
   @media (max-width: 768px) {
+    main {
+      padding: 16px;
+    }
+
     header {
       flex-direction: column;
-      gap: 15px;
-      align-items: flex-start;
+      gap: 16px;
+      align-items: stretch;
+      padding: 16px;
     }
     
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .add-btn {
+      width: 100%;
     }
   }
 </style>
