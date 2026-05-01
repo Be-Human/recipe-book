@@ -21,6 +21,10 @@
     }
   }
   
+  function toggleFavorite() {
+    recipeStore.toggleFavorite(recipe.id)
+  }
+  
   function getCategoryGradient(category) {
     const gradients = {
       '中式料理': 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)',
@@ -34,6 +38,15 @@
     }
     return gradients[category] || gradients['其他']
   }
+  
+  function getDifficultyColor(difficulty) {
+    const colors = {
+      '简单': '#52c41a',
+      '中等': '#faad14',
+      '困难': '#ff4d4f'
+    }
+    return colors[difficulty] || colors['中等']
+  }
 </script>
 
 <div class="recipe-detail">
@@ -42,6 +55,13 @@
       ← 返回列表
     </button>
     <div class="action-buttons">
+      <button 
+        class="favorite-btn {recipe.isFavorite ? 'active' : ''}"
+        on:click={toggleFavorite}
+        title={recipe.isFavorite ? '取消收藏' : '添加收藏'}
+      >
+        {recipe.isFavorite ? '❤️ 已收藏' : '🤍 收藏'}
+      </button>
       <button class="edit-btn" on:click={handleEdit}>
         ✏️ 编辑
       </button>
@@ -52,6 +72,12 @@
   </div>
 
   <div class="detail-content">
+    {#if recipe.coverImage}
+      <div class="cover-image-container">
+        <img src={recipe.coverImage} alt={recipe.name} class="cover-image" />
+      </div>
+    {/if}
+
     <div class="content-header">
       <h1 class="recipe-title">{recipe.name}</h1>
       <span 
@@ -74,6 +100,24 @@
           <span class="info-value">{recipe.cookingTime || '未知'} 分钟</span>
         </div>
       </div>
+      {#if recipe.difficulty}
+        <div class="info-item">
+          <span class="info-icon">📊</span>
+          <div class="info-text">
+            <span class="info-label">难度等级</span>
+            <span class="info-value" style="color: {getDifficultyColor(recipe.difficulty)}">{recipe.difficulty}</span>
+          </div>
+        </div>
+      {/if}
+      {#if recipe.servings}
+        <div class="info-item">
+          <span class="info-icon">👥</span>
+          <div class="info-text">
+            <span class="info-label">份量人数</span>
+            <span class="info-value">{recipe.servings} 人份</span>
+          </div>
+        </div>
+      {/if}
       <div class="info-item">
         <span class="info-icon">🥗</span>
         <div class="info-text">
@@ -171,6 +215,31 @@
     gap: 12px;
   }
 
+  .favorite-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .favorite-btn:hover {
+    border-color: #FF6B81;
+    color: #FF4757;
+    transform: translateY(-2px);
+  }
+
+  .favorite-btn.active {
+    background: linear-gradient(135deg, #FFF0F0 0%, #FFE4E4 100%);
+    border-color: #FF6B81;
+    color: #FF4757;
+  }
+
   .edit-btn, .delete-btn {
     padding: 10px 20px;
     border: none;
@@ -207,6 +276,20 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     padding: 32px;
+  }
+
+  .cover-image-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+  }
+
+  .cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .content-header {
@@ -412,14 +495,21 @@
 
     .action-buttons {
       width: 100%;
+      flex-wrap: wrap;
     }
 
-    .edit-btn, .delete-btn {
+    .favorite-btn, .edit-btn, .delete-btn {
       flex: 1;
+      min-width: 100px;
     }
 
     .detail-content {
       padding: 20px;
+    }
+
+    .cover-image-container {
+      height: 200px;
+      margin-bottom: 16px;
     }
 
     .recipe-title {

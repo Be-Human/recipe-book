@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { recipeStore } from '../store/recipeStore.js'
+  import { recipeStore, DIFFICULTIES } from '../store/recipeStore.js'
   
   export let recipe
   
@@ -13,7 +13,10 @@
     cookingTime: recipe?.cookingTime || '',
     description: recipe?.description || '',
     ingredients: recipe?.ingredients?.map(ing => ({ ...ing })) || [{ name: '', amount: '' }],
-    steps: recipe?.steps?.map(step => ({ ...step })) || [{ description: '', tip: '' }]
+    steps: recipe?.steps?.map(step => ({ ...step })) || [{ description: '', tip: '' }],
+    coverImage: recipe?.coverImage || '',
+    difficulty: recipe?.difficulty || '中等',
+    servings: recipe?.servings || 2
   }
   
   const categories = [
@@ -27,7 +30,26 @@
     '其他'
   ]
   
+  let coverImageInputType = formData.coverImage ? 'url' : 'url'
+  let imagePreview = formData.coverImage || ''
   let errors = {}
+  
+  function handleImageUpload(event) {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        imagePreview = e.target?.result
+        formData.coverImage = e.target?.result
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+  
+  function clearImage() {
+    imagePreview = ''
+    formData.coverImage = ''
+  }
   
   function validate() {
     errors = {}
@@ -42,6 +64,10 @@
     
     if (formData.cookingTime && isNaN(parseInt(formData.cookingTime))) {
       errors.cookingTime = '烹饪时间必须是数字'
+    }
+    
+    if (formData.servings && (isNaN(parseInt(formData.servings)) || parseInt(formData.servings) < 1)) {
+      errors.servings = '份量人数必须是大于0的数字'
     }
     
     const hasIngredients = formData.ingredients.some(ing => ing.name.trim())
@@ -66,7 +92,10 @@
       cookingTime: formData.cookingTime ? parseInt(formData.cookingTime) : null,
       description: formData.description.trim(),
       ingredients: formData.ingredients.filter(ing => ing.name.trim()),
-      steps: formData.steps.filter(step => step.description.trim())
+      steps: formData.steps.filter(step => step.description.trim()),
+      coverImage: formData.coverImage,
+      difficulty: formData.difficulty,
+      servings: formData.servings ? parseInt(formData.servings) : 2
     }
     
     if (isEdit) {
@@ -184,6 +213,104 @@
             rows="3"
           />
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="difficulty" class="form-label">
+              难度等级
+            </label>
+            <select
+              id="difficulty"
+              bind:value={formData.difficulty}
+              class="form-select"
+            >
+              {#each DIFFICULTIES as difficulty}
+                <option value={difficulty}>{difficulty}</option>
+              {/each}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="servings" class="form-label">
+              份量人数
+            </label>
+            <input
+              type="number"
+              id="servings"
+              bind:value={formData.servings}
+              class="form-input {errors.servings ? 'error' : ''}"
+              placeholder="例如：2"
+              min="1"
+            />
+            {#if errors.servings}
+              <span class="error-message">{errors.servings}</span>
+            {/if}
+          </div>
+        </div>
+
+        <fieldset class="form-group">
+          <legend class="form-label">
+            封面图
+          </legend>
+          <div class="cover-image-section">
+            <div class="input-type-tabs">
+              <button
+                type="button"
+                class="tab-btn {coverImageInputType === 'upload' ? 'active' : ''}"
+                on:click={() => coverImageInputType = 'upload'}
+              >
+                📤 上传图片
+              </button>
+              <button
+                type="button"
+                class="tab-btn {coverImageInputType === 'url' ? 'active' : ''}"
+                on:click={() => coverImageInputType = 'url'}
+              >
+                🔗 图片链接
+              </button>
+            </div>
+
+            {#if coverImageInputType === 'upload'}
+              <div class="upload-area">
+                <input
+                  type="file"
+                  id="imageUpload"
+                  accept="image/*"
+                  on:change={handleImageUpload}
+                  class="file-input"
+                />
+                <label for="imageUpload" class="upload-label">
+                  <span class="upload-icon">📷</span>
+                  <span class="upload-text">点击或拖拽上传图片</span>
+                </label>
+              </div>
+            {:else}
+              <input
+                type="url"
+                id="coverImageUrl"
+                bind:value={formData.coverImage}
+                on:input={() => imagePreview = formData.coverImage}
+                class="form-input"
+                placeholder="请输入图片 URL 地址，例如：https://example.com/image.jpg"
+              />
+            {/if}
+
+            {#if imagePreview}
+              <div class="image-preview-container">
+                <div class="image-preview-wrapper">
+                  <img src={imagePreview} alt="封面预览" class="image-preview" />
+                  <button
+                    type="button"
+                    class="clear-image-btn"
+                    on:click={clearImage}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            {/if}
+          </div>
+        </fieldset>
       </section>
 
       <section class="form-section">
@@ -412,8 +539,7 @@
   }
 
   .form-input.error,
-  .form-select.error,
-  .form-textarea.error {
+  .form-select.error {
     border-color: #FF4757;
     background: #FFF5F5;
   }
@@ -562,6 +688,125 @@
     opacity: 0.25;
   }
 
+  .cover-image-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .input-type-tabs {
+    display: flex;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-gradient-1);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+
+  .tab-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .upload-area {
+    position: relative;
+  }
+
+  .file-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-gradient-1);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .upload-label:hover {
+    border-color: var(--primary);
+    background: white;
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
+  }
+
+  .upload-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .image-preview-container {
+    display: flex;
+    justify-content: center;
+  }
+
+  .image-preview-wrapper {
+    position: relative;
+    display: inline-block;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+
+  .image-preview {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .clear-image-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+
+  .clear-image-btn:hover {
+    background: #FF4757;
+    transform: scale(1.1);
+  }
+
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -663,6 +908,19 @@
       width: 32px;
       height: 32px;
       font-size: 0.95rem;
+    }
+
+    .input-type-tabs {
+      flex-direction: column;
+    }
+
+    .tab-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .upload-label {
+      padding: 24px;
     }
 
     .form-actions {

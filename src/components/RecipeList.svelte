@@ -1,13 +1,19 @@
 <script>
   import { createEventDispatcher } from 'svelte'
   import RecipeCard from './RecipeCard.svelte'
-  import { recipeStore, getCategories, filterRecipes } from '../store/recipeStore.js'
+  import { recipeStore, getCategories, filterRecipes, sortRecipes, SORT_OPTIONS } from '../store/recipeStore.js'
   
   let searchKeyword = ''
   let selectedCategory = 'all'
+  let showFavoritesOnly = false
+  let sortBy = 'createdAt'
   
-  $: filteredRecipes = filterRecipes($recipeStore, searchKeyword, selectedCategory)
+  $: filteredRecipes = sortRecipes(
+    filterRecipes($recipeStore, searchKeyword, selectedCategory, showFavoritesOnly),
+    sortBy
+  )
   $: categories = ['all', ...getCategories($recipeStore)]
+  $: favoriteCount = $recipeStore.filter(r => r.isFavorite).length
   
   const dispatch = createEventDispatcher()
   
@@ -28,12 +34,26 @@
       <span class="search-icon">🔍</span>
     </div>
     
-    <div class="filter-box">
+    <div class="filter-controls">
+      <button 
+        class="favorite-filter-btn {showFavoritesOnly ? 'active' : ''}"
+        on:click={() => showFavoritesOnly = !showFavoritesOnly}
+        title={showFavoritesOnly ? '显示全部' : '只显示收藏'}
+      >
+        {showFavoritesOnly ? '❤️ 收藏中' : '🤍 收藏'} ({favoriteCount})
+      </button>
+      
       <select bind:value={selectedCategory} class="category-select">
         {#each categories as category}
           <option value={category}>
             {category === 'all' ? '全部分类' : category}
           </option>
+        {/each}
+      </select>
+      
+      <select bind:value={sortBy} class="sort-select">
+        {#each SORT_OPTIONS as option}
+          <option value={option.value}>按{option.label}排序</option>
         {/each}
       </select>
     </div>
@@ -72,9 +92,9 @@
 
   .search-filter {
     display: flex;
+    flex-direction: column;
     gap: 16px;
     margin-bottom: 28px;
-    flex-wrap: wrap;
     padding: 20px;
     background: var(--card-bg);
     border-radius: var(--radius-lg);
@@ -83,8 +103,7 @@
 
   .search-box {
     position: relative;
-    flex: 1;
-    min-width: 250px;
+    width: 100%;
   }
 
   .search-input {
@@ -95,6 +114,7 @@
     font-size: 0.95rem;
     transition: var(--transition);
     background: var(--bg-gradient-1);
+    box-sizing: border-box;
   }
 
   .search-input:focus {
@@ -117,12 +137,40 @@
     font-size: 1.1rem;
   }
 
-  .filter-box {
-    min-width: 150px;
+  .filter-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
-  .category-select {
-    padding: 14px 18px;
+  .favorite-filter-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-gradient-1);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .favorite-filter-btn:hover {
+    border-color: #FF6B81;
+    color: #FF4757;
+  }
+
+  .favorite-filter-btn.active {
+    background: linear-gradient(135deg, #FFF0F0 0%, #FFE4E4 100%);
+    border-color: #FF6B81;
+    color: #FF4757;
+  }
+
+  .category-select,
+  .sort-select {
+    padding: 14px 44px 14px 18px;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     font-size: 0.95rem;
@@ -135,10 +183,10 @@
     background-repeat: no-repeat;
     background-position: right 14px center;
     background-size: 18px;
-    padding-right: 44px;
   }
 
-  .category-select:focus {
+  .category-select:focus,
+  .sort-select:focus {
     outline: none;
     border-color: var(--primary);
     background: white;
@@ -196,7 +244,6 @@
 
   @media (max-width: 768px) {
     .search-filter {
-      flex-direction: column;
       gap: 12px;
       padding: 16px;
     }
@@ -205,13 +252,18 @@
       min-width: auto;
     }
     
-    .filter-box {
-      min-width: auto;
+    .filter-controls {
       width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
     }
     
-    .category-select {
-      width: 100%;
+    .favorite-filter-btn,
+    .category-select,
+    .sort-select {
+      flex: 1;
+      min-width: auto;
+      font-size: 0.85rem;
     }
     
     .card-grid {
