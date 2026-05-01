@@ -5,33 +5,35 @@
   import { recipeStore, loadRecipes } from './store/recipeStore.js'
   
   let currentView = 'list'
-  let selectedRecipe = null
+  let selectedRecipeId = null
+  
+  $: selectedRecipe = $recipeStore.find(r => r.id === selectedRecipeId) || null
   
   loadRecipes()
   
   function handleViewRecipe(recipe) {
-    selectedRecipe = recipe
+    selectedRecipeId = recipe.id
     currentView = 'detail'
   }
   
   function handleEditRecipe(recipe) {
-    selectedRecipe = recipe
+    selectedRecipeId = recipe.id
     currentView = 'form'
   }
   
   function handleAddRecipe() {
-    selectedRecipe = null
+    selectedRecipeId = null
     currentView = 'form'
   }
   
   function handleSaveRecipe() {
     currentView = 'list'
-    selectedRecipe = null
+    selectedRecipeId = null
   }
   
   function handleBack() {
     currentView = 'list'
-    selectedRecipe = null
+    selectedRecipeId = null
   }
 </script>
 
