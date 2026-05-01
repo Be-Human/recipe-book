@@ -164,6 +164,7 @@
     overflow: hidden;
     border-top-left-radius: var(--radius-lg);
     border-top-right-radius: var(--radius-lg);
+    margin-bottom: 20px;
   }
 
   .cover-image {
