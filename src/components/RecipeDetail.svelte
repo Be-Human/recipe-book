@@ -21,18 +21,18 @@
     }
   }
   
-  function getCategoryColor(category) {
-    const colors = {
-      '中式料理': '#e74c3c',
-      '西式料理': '#3498db',
-      '日式料理': '#2ecc71',
-      '韩式料理': '#9b59b6',
-      '甜点': '#e91e63',
-      '汤品': '#00bcd4',
-      '主食': '#ff9800',
-      '其他': '#607d8b'
+  function getCategoryGradient(category) {
+    const gradients = {
+      '中式料理': 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)',
+      '西式料理': 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
+      '日式料理': 'linear-gradient(135deg, #FFB703 0%, #FB8500 100%)',
+      '韩式料理': 'linear-gradient(135deg, #A8E6CF 0%, #88D8B0 100%)',
+      '甜点': 'linear-gradient(135deg, #FFAFBD 0%, #FFC3A0 100%)',
+      '汤品': 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+      '主食': 'linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)',
+      '其他': 'linear-gradient(135deg, #b2bec3 0%, #636e72 100%)'
     }
-    return colors[category] || colors['其他']
+    return gradients[category] || gradients['其他']
   }
 </script>
 
@@ -56,7 +56,7 @@
       <h1 class="recipe-title">{recipe.name}</h1>
       <span 
         class="category-tag"
-        style="background-color: {getCategoryColor(recipe.category)}"
+        style="background: {getCategoryGradient(recipe.category)}"
       >
         {recipe.category || '未分类'}
       </span>
@@ -148,125 +148,144 @@
   }
 
   .back-btn {
-    background: none;
-    border: none;
-    color: #2c3e50;
-    font-size: 1rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.95rem;
     cursor: pointer;
-    padding: 8px 0;
-    transition: color 0.3s;
+    padding: 10px 20px;
+    transition: var(--transition);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
   }
 
   .back-btn:hover {
-    color: #e74c3c;
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateX(-3px);
   }
 
   .action-buttons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
   }
 
   .edit-btn, .delete-btn {
-    padding: 8px 16px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
   }
 
   .edit-btn {
-    background-color: #3498db;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
     color: white;
   }
 
   .edit-btn:hover {
-    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 
   .delete-btn {
-    background-color: #e74c3c;
+    background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
     color: white;
   }
 
   .delete-btn:hover {
-    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 
   .detail-content {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 30px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 32px;
   }
 
   .content-header {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+    gap: 16px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
   }
 
   .recipe-title {
     margin: 0;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.8rem;
+    font-weight: 700;
   }
 
   .category-tag {
-    padding: 6px 16px;
+    padding: 6px 18px;
     border-radius: 20px;
     color: white;
-    font-size: 0.9rem;
-    font-weight: bold;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   }
 
   .recipe-description {
-    color: #7f8c8d;
+    color: var(--text-secondary);
     font-size: 1.05rem;
-    margin: 0 0 25px 0;
-    line-height: 1.6;
+    margin: 0 0 28px 0;
+    line-height: 1.7;
+    padding: 16px 20px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary);
   }
 
   .quick-info {
     display: flex;
-    gap: 30px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 30px;
+    gap: 24px;
+    padding: 24px;
+    background: linear-gradient(135deg, #FFF8F5 0%, #FFEDE6 100%);
+    border-radius: var(--radius-md);
+    margin-bottom: 32px;
     flex-wrap: wrap;
+    border: 1px solid rgba(255, 107, 53, 0.1);
   }
 
   .info-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
 
   .info-icon {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
 
   .info-text {
     display: flex;
     flex-direction: column;
+    gap: 2px;
   }
 
   .info-label {
-    color: #7f8c8d;
-    font-size: 0.85rem;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .info-value {
-    color: #2c3e50;
-    font-size: 1rem;
-    font-weight: bold;
+    color: var(--primary-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
   }
 
   .detail-section {
-    margin-bottom: 30px;
+    margin-bottom: 36px;
   }
 
   .detail-section:last-child {
@@ -276,91 +295,119 @@
   .section-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #2c3e50;
-    font-size: 1.3rem;
-    margin: 0 0 20px 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e0e0e0;
+    gap: 12px;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
   }
 
   .section-icon {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 
   .ingredients-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
   }
 
   .ingredient-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    border-left: 3px solid #e74c3c;
+    padding: 14px 18px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+    transition: var(--transition);
+  }
+
+  .ingredient-item:hover {
+    transform: translateX(4px);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
   }
 
   .ingredient-name {
-    color: #2c3e50;
-    font-weight: 500;
+    color: var(--text-primary);
+    font-weight: 600;
   }
 
   .ingredient-amount {
-    color: #7f8c8d;
+    color: var(--text-secondary);
     font-size: 0.9rem;
+    font-weight: 500;
   }
 
   .steps-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
 
   .step-item {
     display: flex;
-    gap: 15px;
+    gap: 18px;
+    padding: 20px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+  }
+
+  .step-item:hover {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
   }
 
   .step-number {
-    width: 40px;
-    height: 40px;
-    background: #e74c3c;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 1.1rem;
+    font-weight: 700;
+    font-size: 1.2rem;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
   }
 
   .step-content {
     flex: 1;
-    padding: 10px 0;
+    padding: 4px 0;
   }
 
   .step-description {
     margin: 0;
-    color: #2c3e50;
-    line-height: 1.6;
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-size: 1rem;
   }
 
   .step-tip {
-    margin: 10px 0 0 0;
-    color: #e67e22;
+    margin: 12px 0 0 0;
+    color: var(--accent);
     font-size: 0.9rem;
     font-style: italic;
+    padding: 10px 14px;
+    background: #FFF9E6;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent);
   }
 
   @media (max-width: 768px) {
     .detail-header {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
+    }
+
+    .back-btn {
+      text-align: center;
     }
 
     .action-buttons {
@@ -379,9 +426,14 @@
       font-size: 1.4rem;
     }
 
+    .recipe-description {
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+
     .quick-info {
-      gap: 15px;
-      padding: 15px;
+      gap: 16px;
+      padding: 16px;
     }
 
     .ingredients-list {
@@ -389,12 +441,13 @@
     }
 
     .step-item {
-      gap: 10px;
+      gap: 12px;
+      padding: 16px;
     }
 
     .step-number {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       font-size: 1rem;
     }
   }

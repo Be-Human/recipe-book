@@ -303,36 +303,42 @@
   }
 
   .back-btn {
-    background: none;
-    border: none;
-    color: #2c3e50;
-    font-size: 1rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.95rem;
     cursor: pointer;
-    padding: 8px 0;
-    transition: color 0.3s;
+    padding: 10px 20px;
+    transition: var(--transition);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
   }
 
   .back-btn:hover {
-    color: #e74c3c;
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateX(-3px);
   }
 
   .form-title {
     margin: 0;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.5rem;
+    font-weight: 700;
   }
 
   .form-content {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 30px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 32px;
   }
 
   .form-section {
-    margin-bottom: 35px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .form-section:last-of-type {
@@ -347,13 +353,14 @@
     align-items: center;
     margin-bottom: 20px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
   }
 
   .section-title {
     margin: 0 0 20px 0;
-    color: #2c3e50;
-    font-size: 1.2rem;
+    color: var(--text-primary);
+    font-size: 1.15rem;
+    font-weight: 600;
   }
 
   .section-header .section-title {
@@ -361,7 +368,7 @@
   }
 
   .required {
-    color: #e74c3c;
+    color: #FF4757;
   }
 
   .form-group {
@@ -377,65 +384,79 @@
   .form-label {
     display: block;
     margin-bottom: 8px;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-weight: 500;
+    font-size: 0.95rem;
   }
 
   .form-input,
   .form-select,
   .form-textarea {
     width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    transition: var(--transition);
     font-family: inherit;
+    background: var(--bg-gradient-1);
   }
 
   .form-input:focus,
   .form-select:focus,
   .form-textarea:focus {
     outline: none;
-    border-color: #e74c3c;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
   }
 
   .form-input.error,
   .form-select.error,
   .form-textarea.error {
-    border-color: #e74c3c;
+    border-color: #FF4757;
+    background: #FFF5F5;
   }
 
   .form-textarea {
     resize: vertical;
     min-height: 80px;
+    line-height: 1.6;
   }
 
   .error-message {
     display: inline-block;
-    margin-top: 5px;
-    color: #e74c3c;
+    margin-top: 6px;
+    color: #FF4757;
     font-size: 0.85rem;
+    font-weight: 500;
   }
 
   .error-message.block {
     display: block;
     margin: 0 0 15px 0;
+    padding: 10px 14px;
+    background: #FFF5F5;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid #FF4757;
   }
 
   .add-item-btn {
-    background-color: #3498db;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 18px;
     font-size: 0.9rem;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: var(--transition);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
   }
 
   .add-item-btn:hover {
-    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 
   .items-list {
@@ -447,13 +468,23 @@
   .item-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+  }
+
+  .item-row:hover {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
   }
 
   .item-number {
-    color: #7f8c8d;
-    font-weight: 500;
-    min-width: 25px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    min-width: 28px;
+    font-size: 0.95rem;
   }
 
   .amount-input {
@@ -463,26 +494,36 @@
   .steps-form-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
   .step-form-row {
     display: flex;
-    gap: 15px;
+    gap: 16px;
     align-items: flex-start;
+    padding: 16px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+  }
+
+  .step-form-row:hover {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
   }
 
   .step-number-badge {
-    width: 36px;
-    height: 36px;
-    background: #e74c3c;
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-weight: 700;
     flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
   }
 
   .step-form-content {
@@ -493,75 +534,90 @@
   }
 
   .tip-input {
-    background: #fff9f0;
+    background: #FFF9E6;
+  }
+
+  .tip-input:focus {
+    background: #FFFDF5;
   }
 
   .remove-btn {
     background: none;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
-    padding: 5px;
-    opacity: 0.6;
-    transition: opacity 0.3s;
+    padding: 6px;
+    opacity: 0.5;
+    transition: var(--transition);
+    border-radius: var(--radius-sm);
   }
 
   .remove-btn:hover:not(:disabled) {
     opacity: 1;
+    background: #FFF5F5;
   }
 
   .remove-btn:disabled {
     cursor: not-allowed;
-    opacity: 0.3;
+    opacity: 0.25;
   }
 
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 15px;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
   }
 
   .cancel-btn,
   .save-btn {
-    padding: 12px 24px;
+    padding: 14px 28px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 500;
+    transition: var(--transition);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
 
   .cancel-btn {
-    background-color: #ecf0f1;
-    color: #2c3e50;
+    background: var(--border-color);
+    color: var(--text-primary);
   }
 
   .cancel-btn:hover {
-    background-color: #bdc3c7;
+    background: var(--text-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 
   .save-btn {
-    background-color: #e74c3c;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
   }
 
   .save-btn:hover {
-    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
   }
 
   @media (max-width: 768px) {
     .form-header {
       flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .back-btn {
+      text-align: center;
     }
 
     .form-title {
       font-size: 1.3rem;
+      text-align: center;
     }
 
     .form-content {
@@ -578,14 +634,19 @@
       align-items: flex-start;
     }
 
+    .add-item-btn {
+      width: 100%;
+    }
+
     .item-row {
       flex-wrap: wrap;
+      padding: 12px;
     }
 
     .item-number {
       order: -1;
       width: 100%;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .amount-input {
@@ -594,17 +655,19 @@
     }
 
     .step-form-row {
-      gap: 10px;
+      gap: 12px;
+      padding: 14px;
     }
 
     .step-number-badge {
-      width: 30px;
-      height: 30px;
-      font-size: 0.9rem;
+      width: 32px;
+      height: 32px;
+      font-size: 0.95rem;
     }
 
     .form-actions {
       flex-direction: column-reverse;
+      gap: 12px;
     }
 
     .cancel-btn,
