@@ -2,6 +2,14 @@ import { writable } from 'svelte/store'
 
 const STORAGE_KEY = 'recipe-book-recipes'
 
+export const DIFFICULTIES = ['简单', '中等', '困难']
+
+export const SORT_OPTIONS = [
+  { value: 'name', label: '名称' },
+  { value: 'cookingTime', label: '烹饪时长' },
+  { value: 'createdAt', label: '创建时间' }
+]
+
 const createRecipeStore = () => {
   const { subscribe, set, update } = writable([])
 
@@ -11,7 +19,15 @@ const createRecipeStore = () => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY)
         if (stored) {
-          set(JSON.parse(stored))
+          const parsed = JSON.parse(stored)
+          const migrated = parsed.map(recipe => ({
+            isFavorite: false,
+            difficulty: '中等',
+            servings: 2,
+            coverImage: '',
+            ...recipe
+          }))
+          set(migrated)
         }
       } catch (e) {
         console.error('Failed to load recipes:', e)
@@ -23,7 +39,11 @@ const createRecipeStore = () => {
         ...recipe,
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        isFavorite: recipe.isFavorite || false,
+        difficulty: recipe.difficulty || '中等',
+        servings: recipe.servings || 2,
+        coverImage: recipe.coverImage || ''
       }
       
       update(recipes => {
@@ -56,6 +76,17 @@ const createRecipeStore = () => {
         recipe = recipes.find(r => r.id === id)
       })()
       return recipe
+    },
+    toggleFavorite: (id) => {
+      update(recipes => {
+        const updated = recipes.map(r => 
+          r.id === id 
+            ? { ...r, isFavorite: !r.isFavorite, updatedAt: new Date().toISOString() }
+            : r
+        )
+        saveToStorage(updated)
+        return updated
+      })
     }
   }
 }
@@ -84,8 +115,8 @@ export function getCategories(recipes) {
   return Array.from(categories).sort()
 }
 
-export function filterRecipes(recipes, searchKeyword, selectedCategory) {
-  return recipes.filter(recipe => {
+export function filterRecipes(recipes, searchKeyword, selectedCategory, showFavoritesOnly = false) {
+  let filtered = recipes.filter(recipe => {
     const matchesSearch = searchKeyword 
       ? recipe.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         (recipe.description && recipe.description.toLowerCase().includes(searchKeyword.toLowerCase())) ||
@@ -96,6 +127,32 @@ export function filterRecipes(recipes, searchKeyword, selectedCategory) {
       ? recipe.category === selectedCategory
       : true
     
-    return matchesSearch && matchesCategory
+    const matchesFavorite = showFavoritesOnly
+      ? recipe.isFavorite
+      : true
+    
+    return matchesSearch && matchesCategory && matchesFavorite
   })
+  return filtered
+}
+
+export function sortRecipes(recipes, sortBy) {
+  const sorted = [...recipes]
+  switch (sortBy) {
+    case 'name':
+      sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+      break
+    case 'cookingTime':
+      sorted.sort((a, b) => {
+        const timeA = a.cookingTime || 0
+        const timeB = b.cookingTime || 0
+        return timeA - timeB
+      })
+      break
+    case 'createdAt':
+    default:
+      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      break
+  }
+  return sorted
 }
