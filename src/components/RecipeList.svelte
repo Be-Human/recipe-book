@@ -7,6 +7,8 @@
   let selectedCategory = 'all'
   let showFavoritesOnly = false
   let sortBy = 'createdAt'
+  let selectionMode = false
+  let selectedRecipeIds = new Set()
   
   $: filteredRecipes = sortRecipes(
     filterRecipes($recipeStore, searchKeyword, selectedCategory, showFavoritesOnly),
@@ -14,11 +16,45 @@
   )
   $: categories = ['all', ...getCategories($recipeStore)]
   $: favoriteCount = $recipeStore.filter(r => r.isFavorite).length
+  $: selectedCount = selectedRecipeIds.size
+  $: selectedRecipes = $recipeStore.filter(r => selectedRecipeIds.has(r.id))
   
   const dispatch = createEventDispatcher()
   
   function handleView(recipe) {
-    dispatch('view', recipe)
+    if (!selectionMode) {
+      dispatch('view', recipe)
+    }
+  }
+  
+  function toggleSelectionMode() {
+    selectionMode = !selectionMode
+    if (!selectionMode) {
+      selectedRecipeIds.clear()
+    }
+  }
+  
+  function toggleRecipeSelection(recipeId) {
+    if (selectedRecipeIds.has(recipeId)) {
+      selectedRecipeIds.delete(recipeId)
+    } else {
+      selectedRecipeIds.add(recipeId)
+    }
+    selectedRecipeIds = new Set(selectedRecipeIds)
+  }
+  
+  function selectAll() {
+    filteredRecipes.forEach(r => selectedRecipeIds.add(r.id))
+    selectedRecipeIds = new Set(selectedRecipeIds)
+  }
+  
+  function clearSelection() {
+    selectedRecipeIds.clear()
+    selectedRecipeIds = new Set(selectedRecipeIds)
+  }
+  
+  function generateShoppingList() {
+    dispatch('generateShoppingList', selectedRecipes)
   }
 </script>
 
@@ -35,6 +71,14 @@
     </div>
     
     <div class="filter-controls">
+      <button 
+        class="selection-mode-btn {selectionMode ? 'active' : ''}"
+        on:click={toggleSelectionMode}
+        title={selectionMode ? '退出选择模式' : '进入选择模式'}
+      >
+        {selectionMode ? '✓ 选择中' : '☐ 选择食谱'}
+      </button>
+      
       <button 
         class="favorite-filter-btn {showFavoritesOnly ? 'active' : ''}"
         on:click={() => showFavoritesOnly = !showFavoritesOnly}
@@ -57,6 +101,23 @@
         {/each}
       </select>
     </div>
+    
+    {#if selectionMode}
+      <div class="selection-controls">
+        <div class="selection-info">
+          已选择 <span class="selection-count">{selectedCount}</span> 个食谱
+        </div>
+        <div class="selection-actions">
+          <button class="select-action-btn" on:click={selectAll}>全选</button>
+          <button class="select-action-btn" on:click={clearSelection}>清除</button>
+          {#if selectedCount > 0}
+            <button class="generate-shopping-btn" on:click={generateShoppingList}>
+              🛒 生成购物清单
+            </button>
+          {/if}
+        </div>
+      </div>
+    {/if}
   </div>
 
   {#if filteredRecipes.length === 0}
@@ -72,7 +133,19 @@
   {:else}
     <div class="card-grid">
       {#each filteredRecipes as recipe (recipe.id)}
-        <RecipeCard {recipe} on:view={(e) => handleView(e.detail)} />
+        <div class="recipe-card-wrapper" class:selected={selectedRecipeIds.has(recipe.id)}>
+          {#if selectionMode}
+            <label class="selection-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedRecipeIds.has(recipe.id)}
+                on:change={() => toggleRecipeSelection(recipe.id)}
+              />
+              <span class="checkmark"></span>
+            </label>
+          {/if}
+          <RecipeCard {recipe} on:view={(e) => handleView(e.detail)} />
+        </div>
       {/each}
     </div>
     
@@ -168,6 +241,96 @@
     color: #FF4757;
   }
 
+  .selection-mode-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-gradient-1);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .selection-mode-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .selection-mode-btn.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
+    color: white;
+  }
+
+  .selection-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #FFF8F5 0%, #FFEDE6 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+  }
+
+  .selection-info {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .selection-count {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .selection-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .select-action-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border-color);
+    background: white;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+  }
+
+  .select-action-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .generate-shopping-btn {
+    padding: 10px 20px;
+    border: none;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(78, 205, 196, 0.3);
+  }
+
+  .generate-shopping-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+  }
+
   .category-select,
   .sort-select {
     padding: 14px 44px 14px 18px;
@@ -198,6 +361,67 @@
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
+  }
+
+  .recipe-card-wrapper {
+    position: relative;
+    transition: var(--transition);
+  }
+
+  .recipe-card-wrapper.selected {
+    transform: scale(1.02);
+  }
+
+  .recipe-card-wrapper.selected :global(.recipe-card) {
+    box-shadow: 0 0 0 3px var(--primary), var(--shadow-lg);
+  }
+
+  .selection-checkbox {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .selection-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+  }
+
+  .checkmark {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .selection-checkbox:hover .checkmark {
+    border-color: var(--primary);
+  }
+
+  .selection-checkbox input:checked + .checkmark {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
+  }
+
+  .selection-checkbox input:checked + .checkmark::after {
+    content: '✓';
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
   }
 
   .empty-state {
@@ -256,8 +480,10 @@
       width: 100%;
       flex-direction: row;
       justify-content: space-between;
+      flex-wrap: wrap;
     }
     
+    .selection-mode-btn,
     .favorite-filter-btn,
     .category-select,
     .sort-select {
@@ -266,9 +492,33 @@
       font-size: 0.85rem;
     }
     
+    .selection-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    
+    .selection-info {
+      text-align: center;
+    }
+    
+    .selection-actions {
+      justify-content: center;
+    }
+    
+    .generate-shopping-btn {
+      width: 100%;
+      text-align: center;
+    }
+    
     .card-grid {
       grid-template-columns: 1fr;
       gap: 16px;
+    }
+    
+    .selection-checkbox {
+      top: 8px;
+      right: 8px;
     }
   }
 </style>
