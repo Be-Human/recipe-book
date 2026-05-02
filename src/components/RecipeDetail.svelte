@@ -658,37 +658,42 @@
   }
 
   .add-history-form {
-    padding: 20px;
-    background: var(--bg-gradient-1);
-    border-radius: var(--radius-md);
+    padding: 24px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
     margin-bottom: 20px;
-    border: 2px dashed var(--border-color);
+    box-shadow: var(--shadow-sm);
+    border: 2px solid var(--border-color);
   }
 
   .history-form-actions {
     display: flex;
-    gap: 12px;
-    margin-top: 12px;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
   }
 
   .history-form-actions .action-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
     border-radius: var(--radius-md);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: var(--transition);
     font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
 
   .history-form-actions .action-btn.save {
-    background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
   }
 
   .history-form-actions .action-btn.save:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(82, 196, 26, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
   }
 
   .history-form-actions .action-btn.cancel {
@@ -698,6 +703,8 @@
 
   .history-form-actions .action-btn.cancel:hover {
     background: var(--text-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 
   .empty-history {
