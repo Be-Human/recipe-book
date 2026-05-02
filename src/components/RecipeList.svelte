@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
   import RecipeCard from './RecipeCard.svelte'
-  import { recipeStore, getCategories, filterRecipes, sortRecipes, SORT_OPTIONS } from '../store/recipeStore.js'
+  import { recipeStore, categoryStore, filterRecipes, sortRecipes, SORT_OPTIONS } from '../store/recipeStore.js'
   
   let searchKeyword = ''
   let selectedCategory = 'all'
@@ -14,7 +14,7 @@
     filterRecipes($recipeStore, searchKeyword, selectedCategory, showFavoritesOnly),
     sortBy
   )
-  $: categories = ['all', ...getCategories($recipeStore)]
+  $: categories = ['all', ...$categoryStore]
   $: favoriteCount = $recipeStore.filter(r => r.isFavorite).length
   $: selectedCount = selectedRecipeIds.size
   $: selectedRecipes = $recipeStore.filter(r => selectedRecipeIds.has(r.id))
@@ -56,6 +56,10 @@
   function generateShoppingList() {
     dispatch('generateShoppingList', selectedRecipes)
   }
+  
+  function handleManageCategories() {
+    dispatch('manageCategories')
+  }
 </script>
 
 <div class="recipe-list">
@@ -94,6 +98,14 @@
           </option>
         {/each}
       </select>
+      
+      <button 
+        class="manage-categories-btn"
+        on:click={handleManageCategories}
+        title="管理分类"
+      >
+        ⚙️ 管理分类
+      </button>
       
       <select bind:value={sortBy} class="sort-select">
         {#each SORT_OPTIONS as option}
@@ -263,6 +275,25 @@
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     border-color: var(--primary);
     color: white;
+  }
+
+  .manage-categories-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(78, 205, 196, 0.3);
+  }
+
+  .manage-categories-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
   }
 
   .selection-controls {

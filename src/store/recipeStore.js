@@ -1,8 +1,21 @@
 import { writable } from 'svelte/store'
 
 const STORAGE_KEY = 'recipe-book-recipes'
+const CATEGORIES_KEY = 'recipe-book-categories'
+const COOKING_HISTORY_KEY = 'recipe-book-cooking-history'
 
 export const DIFFICULTIES = ['简单', '中等', '困难']
+
+export const DEFAULT_CATEGORIES = [
+  '中式料理',
+  '西式料理', 
+  '日式料理',
+  '韩式料理',
+  '甜点',
+  '汤品',
+  '主食',
+  '其他'
+]
 
 export const SORT_OPTIONS = [
   { value: 'name', label: '名称' },
@@ -25,6 +38,7 @@ const createRecipeStore = () => {
             difficulty: '中等',
             servings: 2,
             coverImage: '',
+            rating: null,
             ...recipe
           }))
           set(migrated)
@@ -43,7 +57,8 @@ const createRecipeStore = () => {
         isFavorite: recipe.isFavorite || false,
         difficulty: recipe.difficulty || '中等',
         servings: recipe.servings || 2,
-        coverImage: recipe.coverImage || ''
+        coverImage: recipe.coverImage || '',
+        rating: recipe.rating || null
       }
       
       update(recipes => {
@@ -155,4 +170,130 @@ export function sortRecipes(recipes, sortBy) {
       break
   }
   return sorted
+}
+
+const createCategoryStore = () => {
+  const { subscribe, set, update } = writable([])
+
+  return {
+    subscribe,
+    load: () => {
+      try {
+        const stored = localStorage.getItem(CATEGORIES_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          set(parsed)
+        } else {
+          set([...DEFAULT_CATEGORIES])
+        }
+      } catch (e) {
+        console.error('Failed to load categories:', e)
+        set([...DEFAULT_CATEGORIES])
+      }
+    },
+    add: (category) => {
+      update(categories => {
+        const trimmed = category.trim()
+        if (!trimmed || categories.includes(trimmed)) {
+          return categories
+        }
+        const updated = [...categories, trimmed].sort()
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updated))
+        return updated
+      })
+    },
+    delete: (category) => {
+      update(categories => {
+        const updated = categories.filter(c => c !== category)
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updated))
+        return updated
+      })
+    },
+    rename: (oldName, newName) => {
+      const trimmed = newName.trim()
+      if (!trimmed || oldName === trimmed) return
+      update(categories => {
+        const updated = categories.map(c => c === oldName ? trimmed : c)
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updated))
+        return updated
+      })
+    },
+    isUsed: (category, recipes) => {
+      return recipes.some(r => r.category === category)
+    },
+    getUsedCount: (category, recipes) => {
+      return recipes.filter(r => r.category === category).length
+    }
+  }
+}
+
+export const categoryStore = createCategoryStore()
+
+export function loadCategories() {
+  categoryStore.load()
+}
+
+const createCookingHistoryStore = () => {
+  const { subscribe, set, update } = writable([])
+
+  return {
+    subscribe,
+    load: () => {
+      try {
+        const stored = localStorage.getItem(COOKING_HISTORY_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          set(parsed)
+        }
+      } catch (e) {
+        console.error('Failed to load cooking history:', e)
+        set([])
+      }
+    },
+    add: (recipeId, note = '') => {
+      const entry = {
+        id: Date.now().toString(),
+        recipeId,
+        cookedAt: new Date().toISOString(),
+        note: note.trim()
+      }
+      update(history => {
+        const updated = [entry, ...history]
+        localStorage.setItem(COOKING_HISTORY_KEY, JSON.stringify(updated))
+        return updated
+      })
+      return entry
+    },
+    updateNote: (historyId, note) => {
+      update(history => {
+        const updated = history.map(h => 
+          h.id === historyId 
+            ? { ...h, note: note.trim(), updatedAt: new Date().toISOString() }
+            : h
+        )
+        localStorage.setItem(COOKING_HISTORY_KEY, JSON.stringify(updated))
+        return updated
+      })
+    },
+    delete: (historyId) => {
+      update(history => {
+        const updated = history.filter(h => h.id !== historyId)
+        localStorage.setItem(COOKING_HISTORY_KEY, JSON.stringify(updated))
+        return updated
+      })
+    },
+    getByRecipeId: (recipeId) => {
+      let history = []
+      subscribe(h => {
+        history = h.filter(item => item.recipeId === recipeId)
+      })()
+      return history
+    }
+  }
+}
+
+export const cookingHistoryStore = createCookingHistoryStore()
+
+export function loadCookingHistory() {
+  cookingHistoryStore.load()
 }

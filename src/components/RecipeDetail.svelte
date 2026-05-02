@@ -1,10 +1,15 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { recipeStore } from '../store/recipeStore.js'
+  import { recipeStore, cookingHistoryStore } from '../store/recipeStore.js'
   
   export let recipe
   
   const dispatch = createEventDispatcher()
+  
+  let showAddHistory = false
+  let newHistoryNote = ''
+  
+  $: recipeHistory = $cookingHistoryStore.filter(h => h.recipeId === recipe.id)
   
   function handleBack() {
     dispatch('back')
@@ -47,6 +52,38 @@
     }
     return colors[difficulty] || colors['中等']
   }
+  
+  function renderStars(rating) {
+    if (!rating) return '☆☆☆☆☆'
+    let stars = ''
+    for (let i = 1; i <= 5; i++) {
+      stars += i <= rating ? '★' : '☆'
+    }
+    return stars
+  }
+  
+  function formatDate(dateString) {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+  
+  function addCookingHistory() {
+    cookingHistoryStore.add(recipe.id, newHistoryNote)
+    newHistoryNote = ''
+    showAddHistory = false
+  }
+  
+  function deleteHistory(historyId) {
+    if (confirm('确定要删除这条烹饪记录吗？')) {
+      cookingHistoryStore.delete(historyId)
+    }
+  }
 </script>
 
 <div class="recipe-detail">
@@ -87,6 +124,15 @@
         {recipe.category || '未分类'}
       </span>
     </div>
+    
+    {#if recipe.rating}
+      <div class="rating-display">
+        <span class="rating-stars" style="color: #FFD700;">
+          {renderStars(recipe.rating)}
+        </span>
+        <span class="rating-text">{recipe.rating} 星</span>
+      </div>
+    {/if}
 
     {#if recipe.description}
       <p class="recipe-description">{recipe.description}</p>
@@ -174,6 +220,77 @@
         </div>
       </section>
     {/if}
+
+    <section class="detail-section cooking-history-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span class="section-icon">📅</span> 烹饪历史
+        </h2>
+        <button 
+          class="add-history-btn"
+          on:click={() => showAddHistory = !showAddHistory}
+        >
+          {showAddHistory ? '✕ 取消' : '+ 记录烹饪'}
+        </button>
+      </div>
+
+      {#if showAddHistory}
+        <div class="add-history-form">
+          <textarea
+            bind:value={newHistoryNote}
+            class="form-textarea"
+            placeholder="添加烹饪备注（可选）：今天的味道如何？有什么改进建议？"
+            rows="3"
+          />
+          <div class="history-form-actions">
+            <button 
+              type="button"
+              class="action-btn save"
+              on:click={addCookingHistory}
+            >
+              ✓ 保存记录
+            </button>
+            <button 
+              type="button"
+              class="action-btn cancel"
+              on:click={() => { showAddHistory = false; newHistoryNote = ''; }}
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      {/if}
+
+      {#if recipeHistory.length === 0}
+        <div class="empty-history">
+          <span class="empty-icon">🍽️</span>
+          <p class="empty-message">还没有烹饪记录</p>
+          <p class="empty-hint">点击"记录烹饪"开始记录您的烹饪历程</p>
+        </div>
+      {:else}
+        <div class="history-list">
+          {#each recipeHistory as history (history.id)}
+            <div class="history-item">
+              <div class="history-header">
+                <span class="history-date">
+                  🕐 {formatDate(history.cookedAt)}
+                </span>
+                <button 
+                  class="delete-history-btn"
+                  on:click={() => deleteHistory(history.id)}
+                  title="删除记录"
+                >
+                  🗑️
+                </button>
+              </div>
+              {#if history.note}
+                <p class="history-note">{history.note}</p>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </section>
   </div>
 </div>
 
@@ -483,6 +600,188 @@
     background: #FFF9E6;
     border-radius: var(--radius-sm);
     border-left: 3px solid var(--accent);
+  }
+
+  .rating-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #FFF9E6 0%, #FFF3CD 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+  }
+
+  .rating-stars {
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+  }
+
+  .rating-text {
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .cooking-history-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .cooking-history-section .section-title {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .add-history-btn {
+    padding: 10px 20px;
+    border: none;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(78, 205, 196, 0.3);
+  }
+
+  .add-history-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+  }
+
+  .add-history-form {
+    padding: 20px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    border: 2px dashed var(--border-color);
+  }
+
+  .history-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .history-form-actions .action-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+  }
+
+  .history-form-actions .action-btn.save {
+    background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+    color: white;
+  }
+
+  .history-form-actions .action-btn.save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(82, 196, 26, 0.4);
+  }
+
+  .history-form-actions .action-btn.cancel {
+    background: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .history-form-actions .action-btn.cancel:hover {
+    background: var(--text-light);
+  }
+
+  .empty-history {
+    text-align: center;
+    padding: 40px 24px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+  }
+
+  .empty-history .empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .empty-history .empty-message {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    font-weight: 600;
+  }
+
+  .empty-history .empty-hint {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .history-item {
+    padding: 16px 20px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--secondary);
+    transition: var(--transition);
+  }
+
+  .history-item:hover {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .history-date {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .delete-history-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    opacity: 0.5;
+    transition: var(--transition);
+  }
+
+  .delete-history-btn:hover {
+    opacity: 1;
+    background: #FFF5F5;
+  }
+
+  .history-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
   }
 
   @media (max-width: 768px) {

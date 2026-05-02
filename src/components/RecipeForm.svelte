@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { recipeStore, DIFFICULTIES } from '../store/recipeStore.js'
+  import { recipeStore, categoryStore, DIFFICULTIES } from '../store/recipeStore.js'
   
   export let recipe
   
@@ -16,19 +16,9 @@
     steps: recipe?.steps?.map(step => ({ ...step })) || [{ description: '', tip: '' }],
     coverImage: recipe?.coverImage || '',
     difficulty: recipe?.difficulty || '中等',
-    servings: recipe?.servings || 2
+    servings: recipe?.servings || 2,
+    rating: recipe?.rating || null
   }
-  
-  const categories = [
-    '中式料理',
-    '西式料理', 
-    '日式料理',
-    '韩式料理',
-    '甜点',
-    '汤品',
-    '主食',
-    '其他'
-  ]
   
   function isBase64Image(image) {
     return image && image.startsWith('data:image')
@@ -99,7 +89,8 @@
       steps: formData.steps.filter(step => step.description.trim()),
       coverImage: formData.coverImage,
       difficulty: formData.difficulty,
-      servings: formData.servings ? parseInt(formData.servings) : 2
+      servings: formData.servings ? parseInt(formData.servings) : 2,
+      rating: formData.rating
     }
     
     if (isEdit) {
@@ -109,6 +100,14 @@
     }
     
     dispatch('save')
+  }
+  
+  function setRating(stars) {
+    if (formData.rating === stars) {
+      formData.rating = null
+    } else {
+      formData.rating = stars
+    }
   }
   
   function handleCancel() {
@@ -178,7 +177,7 @@
               class="form-select {errors.category ? 'error' : ''}"
             >
               <option value="">请选择分类</option>
-              {#each categories as category}
+              {#each $categoryStore as category}
                 <option value={category}>{category}</option>
               {/each}
             </select>
@@ -249,6 +248,26 @@
             {#if errors.servings}
               <span class="error-message">{errors.servings}</span>
             {/if}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            星级评分
+          </label>
+          <div class="rating-input">
+            {#each [1, 2, 3, 4, 5] as star}
+              <button
+                type="button"
+                class="star-btn {formData.rating >= star ? 'active' : ''}"
+                on:click={() => setRating(star)}
+              >
+                {formData.rating >= star ? '★' : '☆'}
+              </button>
+            {/each}
+            <span class="rating-text">
+              {formData.rating ? `${formData.rating} 星` : '点击星星评分'}
+            </span>
           </div>
         </div>
 
@@ -569,6 +588,41 @@
     background: #FFF5F5;
     border-radius: var(--radius-sm);
     border-left: 3px solid #FF4757;
+  }
+
+  .rating-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-gradient-1);
+    border-radius: var(--radius-md);
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+  }
+
+  .star-btn:hover {
+    transform: scale(1.2);
+    color: #FFD700;
+  }
+
+  .star-btn.active {
+    color: #FFD700;
+  }
+
+  .rating-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-left: 8px;
   }
 
   .add-item-btn {
