@@ -666,6 +666,27 @@
     border: 2px solid var(--border-color);
   }
 
+  .form-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    transition: var(--transition);
+    font-family: inherit;
+    background: var(--bg-gradient-1);
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.6;
+  }
+
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  }
+
   .history-form-actions {
     display: flex;
     justify-content: flex-end;
