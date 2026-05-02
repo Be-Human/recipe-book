@@ -39,6 +39,12 @@ const createRecipeStore = () => {
             servings: 2,
             coverImage: '',
             rating: null,
+            nutrition: {
+              calories: null,
+              protein: null,
+              fat: null,
+              carbs: null
+            },
             ...recipe
           }))
           set(migrated)
@@ -58,7 +64,13 @@ const createRecipeStore = () => {
         difficulty: recipe.difficulty || '中等',
         servings: recipe.servings || 2,
         coverImage: recipe.coverImage || '',
-        rating: recipe.rating || null
+        rating: recipe.rating || null,
+        nutrition: recipe.nutrition || {
+          calories: null,
+          protein: null,
+          fat: null,
+          carbs: null
+        }
       }
       
       update(recipes => {
@@ -85,6 +97,13 @@ const createRecipeStore = () => {
         return updated
       })
     },
+    deleteMultiple: (ids) => {
+      update(recipes => {
+        const updated = recipes.filter(r => !ids.includes(r.id))
+        saveToStorage(updated)
+        return updated
+      })
+    },
     getById: (id) => {
       let recipe = null
       subscribe(recipes => {
@@ -102,6 +121,71 @@ const createRecipeStore = () => {
         saveToStorage(updated)
         return updated
       })
+    },
+    importRecipes: (importedRecipes, onConflict) => {
+      return new Promise((resolve) => {
+        update(recipes => {
+          let results = {
+            imported: 0,
+            skipped: 0,
+            overwritten: 0,
+            conflicts: []
+          }
+
+          const existingMap = new Map(recipes.map(r => [r.id, r]))
+          let updatedRecipes = [...recipes]
+
+          for (const imported of importedRecipes) {
+            if (!imported.name) continue
+
+            const existing = existingMap.get(imported.id)
+            
+            if (existing) {
+              if (onConflict) {
+                const action = onConflict(existing, imported)
+                if (action === 'overwrite') {
+                  const index = updatedRecipes.findIndex(r => r.id === imported.id)
+                  if (index !== -1) {
+                    updatedRecipes[index] = {
+                      ...existing,
+                      ...imported,
+                      updatedAt: new Date().toISOString()
+                    }
+                  }
+                  results.overwritten++
+                } else {
+                  results.skipped++
+                }
+              } else {
+                results.conflicts.push({
+                  existing,
+                  imported
+                })
+              }
+            } else {
+              const newRecipe = {
+                ...imported,
+                createdAt: imported.createdAt || new Date().toISOString(),
+                updatedAt: imported.updatedAt || new Date().toISOString()
+              }
+              updatedRecipes.push(newRecipe)
+              results.imported++
+            }
+          }
+
+          saveToStorage(updatedRecipes)
+          set(updatedRecipes)
+          resolve(results)
+          return updatedRecipes
+        })
+      })
+    },
+    getAll: () => {
+      let all = []
+      subscribe(recipes => {
+        all = [...recipes]
+      })()
+      return all
     }
   }
 }
@@ -296,4 +380,64 @@ export const cookingHistoryStore = createCookingHistoryStore()
 
 export function loadCookingHistory() {
   cookingHistoryStore.load()
+}
+
+export function exportRecipeAsJson(recipe) {
+  const exportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    type: 'single',
+    recipes: [recipe]
+  }
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `食谱-${recipe.name}-${Date.now()}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+export function exportAllRecipesAsJson(recipes) {
+  const exportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    type: 'all',
+    recipes: recipes
+  }
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `全部食谱-${new Date().toISOString().slice(0, 10)}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+export function parseImportedJson(jsonString) {
+  try {
+    const parsed = JSON.parse(jsonString)
+    
+    if (!parsed || !parsed.recipes || !Array.isArray(parsed.recipes)) {
+      return { success: false, error: '无效的导入文件格式' }
+    }
+    
+    const validRecipes = parsed.recipes.filter(r => r && r.name)
+    
+    if (validRecipes.length === 0) {
+      return { success: false, error: '没有找到有效的食谱数据' }
+    }
+    
+    return { success: true, recipes: validRecipes }
+  } catch (e) {
+    return { success: false, error: 'JSON 解析错误: ' + e.message }
+  }
 }

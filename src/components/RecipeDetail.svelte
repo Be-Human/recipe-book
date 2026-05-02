@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { recipeStore, cookingHistoryStore } from '../store/recipeStore.js'
+  import { recipeStore, cookingHistoryStore, exportRecipeAsJson } from '../store/recipeStore.js'
   
   export let recipe
   
@@ -84,6 +84,16 @@
       cookingHistoryStore.delete(historyId)
     }
   }
+  
+  function handleExport() {
+    exportRecipeAsJson(recipe)
+  }
+  
+  function hasNutritionData() {
+    if (!recipe.nutrition) return false
+    const { calories, protein, fat, carbs } = recipe.nutrition
+    return calories !== null || protein !== null || fat !== null || carbs !== null
+  }
 </script>
 
 <div class="recipe-detail">
@@ -98,6 +108,9 @@
         title={recipe.isFavorite ? '取消收藏' : '添加收藏'}
       >
         {recipe.isFavorite ? '❤️ 已收藏' : '🤍 收藏'}
+      </button>
+      <button class="export-btn" on:click={handleExport}>
+        📤 导出
       </button>
       <button class="edit-btn" on:click={handleEdit}>
         ✏️ 编辑
@@ -179,6 +192,52 @@
         </div>
       </div>
     </div>
+
+    {#if hasNutritionData()}
+      <section class="detail-section nutrition-section">
+        <h2 class="section-title">
+          <span class="section-icon">📊</span> 营养信息（每份）
+        </h2>
+        <div class="nutrition-card">
+          {#if recipe.nutrition.calories !== null}
+            <div class="nutrition-item">
+              <span class="nutrition-icon">🔥</span>
+              <div class="nutrition-info">
+                <span class="nutrition-label">卡路里</span>
+                <span class="nutrition-value">{recipe.nutrition.calories} <span class="nutrition-unit">kcal</span></span>
+              </div>
+            </div>
+          {/if}
+          {#if recipe.nutrition.protein !== null}
+            <div class="nutrition-item">
+              <span class="nutrition-icon">💪</span>
+              <div class="nutrition-info">
+                <span class="nutrition-label">蛋白质</span>
+                <span class="nutrition-value">{recipe.nutrition.protein} <span class="nutrition-unit">g</span></span>
+              </div>
+            </div>
+          {/if}
+          {#if recipe.nutrition.fat !== null}
+            <div class="nutrition-item">
+              <span class="nutrition-icon">🧈</span>
+              <div class="nutrition-info">
+                <span class="nutrition-label">脂肪</span>
+                <span class="nutrition-value">{recipe.nutrition.fat} <span class="nutrition-unit">g</span></span>
+              </div>
+            </div>
+          {/if}
+          {#if recipe.nutrition.carbs !== null}
+            <div class="nutrition-item">
+              <span class="nutrition-icon">🍞</span>
+              <div class="nutrition-info">
+                <span class="nutrition-label">碳水化合物</span>
+                <span class="nutrition-value">{recipe.nutrition.carbs} <span class="nutrition-unit">g</span></span>
+              </div>
+            </div>
+          {/if}
+        </div>
+      </section>
+    {/if}
 
     {#if recipe.ingredients && recipe.ingredients.length > 0}
       <section class="detail-section">
@@ -359,6 +418,24 @@
     transform: scale(1.02);
   }
 
+  .export-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    color: white;
+  }
+
+  .export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
   .edit-btn, .delete-btn {
     padding: 10px 20px;
     border: none;
@@ -508,6 +585,56 @@
 
   .section-icon {
     font-size: 1.6rem;
+  }
+
+  .nutrition-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .nutrition-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+  }
+
+  .nutrition-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .nutrition-icon {
+    font-size: 2rem;
+  }
+
+  .nutrition-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nutrition-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .nutrition-value {
+    color: var(--primary-dark);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .nutrition-unit {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text-secondary);
   }
 
   .ingredients-list {
