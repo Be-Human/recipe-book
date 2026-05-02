@@ -359,18 +359,16 @@
         </span>
       </div>
       
-      {@const conflict = importConflicts[currentConflictIndex]}
-      
       <div class="conflict-content">
         <div class="conflict-item existing">
           <h4 class="conflict-label">当前版本</h4>
           <div class="conflict-recipe-info">
-            <span class="recipe-name">{conflict.existing.name}</span>
-            {#if conflict.existing.category}
-              <span class="recipe-category">{conflict.existing.category}</span>
+            <span class="recipe-name">{importConflicts[currentConflictIndex].existing.name}</span>
+            {#if importConflicts[currentConflictIndex].existing.category}
+              <span class="recipe-category">{importConflicts[currentConflictIndex].existing.category}</span>
             {/if}
-            {#if conflict.existing.updatedAt}
-              <span class="recipe-date">更新于 {new Date(conflict.existing.updatedAt).toLocaleDateString('zh-CN')}</span>
+            {#if importConflicts[currentConflictIndex].existing.updatedAt}
+              <span class="recipe-date">更新于 {new Date(importConflicts[currentConflictIndex].existing.updatedAt).toLocaleDateString('zh-CN')}</span>
             {/if}
           </div>
         </div>
@@ -382,12 +380,12 @@
         <div class="conflict-item imported">
           <h4 class="conflict-label">导入版本</h4>
           <div class="conflict-recipe-info">
-            <span class="recipe-name">{conflict.imported.name}</span>
-            {#if conflict.imported.category}
-              <span class="recipe-category">{conflict.imported.category}</span>
+            <span class="recipe-name">{importConflicts[currentConflictIndex].imported.name}</span>
+            {#if importConflicts[currentConflictIndex].imported.category}
+              <span class="recipe-category">{importConflicts[currentConflictIndex].imported.category}</span>
             {/if}
-            {#if conflict.imported.updatedAt}
-              <span class="recipe-date">更新于 {new Date(conflict.imported.updatedAt).toLocaleDateString('zh-CN')}</span>
+            {#if importConflicts[currentConflictIndex].imported.updatedAt}
+              <span class="recipe-date">更新于 {new Date(importConflicts[currentConflictIndex].imported.updatedAt).toLocaleDateString('zh-CN')}</span>
             {/if}
           </div>
         </div>
