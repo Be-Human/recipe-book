@@ -126,31 +126,43 @@
   }
   
   function skipConflict() {
+    const conflict = importConflicts[currentConflictIndex]
+    conflict.action = 'skip'
+    
     if (currentConflictIndex < importConflicts.length - 1) {
       currentConflictIndex++
     } else {
-      doImport('skip')
+      doImport()
     }
   }
   
   function overwriteConflict() {
+    const conflict = importConflicts[currentConflictIndex]
+    conflict.action = 'overwrite'
+    
     if (currentConflictIndex < importConflicts.length - 1) {
-      const conflict = importConflicts[currentConflictIndex]
-      conflict.action = 'overwrite'
       currentConflictIndex++
     } else {
-      const conflict = importConflicts[currentConflictIndex]
-      conflict.action = 'overwrite'
-      doImport('overwrite')
+      doImport()
     }
   }
   
   function skipAllConflicts() {
-    doImport('skip')
+    for (const conflict of importConflicts) {
+      if (!conflict.action) {
+        conflict.action = 'skip'
+      }
+    }
+    doImport()
   }
   
   function overwriteAllConflicts() {
-    doImport('overwrite')
+    for (const conflict of importConflicts) {
+      if (!conflict.action) {
+        conflict.action = 'overwrite'
+      }
+    }
+    doImport()
   }
   
   function cancelImport() {
@@ -161,20 +173,17 @@
     importResults = null
   }
   
-  async function doImport(defaultConflictAction) {
+  async function doImport() {
     showImportModal = false
     
     const conflictActions = new Map()
     for (const conflict of importConflicts) {
-      if (conflict.action) {
-        conflictActions.set(conflict.existing.id, conflict.action)
-      }
+      conflictActions.set(conflict.existing.id, conflict.action || 'skip')
     }
     
     function onConflict(existing, imported) {
       const action = conflictActions.get(existing.id)
-      if (action) return action
-      return defaultConflictAction || 'skip'
+      return action || 'skip'
     }
     
     const results = await recipeStore.importRecipes(importRecipesData, onConflict)
