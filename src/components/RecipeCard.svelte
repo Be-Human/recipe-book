@@ -52,6 +52,15 @@
     }
     return colors[difficulty] || colors['中等']
   }
+  
+  function renderStars(rating) {
+    if (!rating) return ''
+    let stars = ''
+    for (let i = 1; i <= 5; i++) {
+      stars += i <= rating ? '★' : '☆'
+    }
+    return stars
+  }
 </script>
 
 <div 
@@ -136,6 +145,14 @@
             <div class="info-badge serving-badge">
               <span class="info-icon">👥</span>
               <span>{recipe.servings} 人份</span>
+            </div>
+          </div>
+        {/if}
+        {#if recipe.rating}
+          <div class="info-item">
+            <div class="info-badge rating-badge">
+              <span class="info-icon">⭐</span>
+              <span style="color: #FFD700;">{renderStars(recipe.rating)}</span>
             </div>
           </div>
         {/if}
@@ -340,6 +357,11 @@
   .serving-badge {
     background: linear-gradient(135deg, #F9F0FF 0%, #F3E8FF 100%);
     color: #6c5ce7;
+  }
+
+  .rating-badge {
+    background: linear-gradient(135deg, #FFF9E6 0%, #FFF3CD 100%);
+    color: #FFD700;
   }
 
   .info-icon {

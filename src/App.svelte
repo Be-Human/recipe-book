@@ -3,7 +3,8 @@
   import RecipeDetail from './components/RecipeDetail.svelte'
   import RecipeForm from './components/RecipeForm.svelte'
   import ShoppingList from './components/ShoppingList.svelte'
-  import { recipeStore, loadRecipes } from './store/recipeStore.js'
+  import CategoryManager from './components/CategoryManager.svelte'
+  import { recipeStore, loadRecipes, categoryStore, loadCategories, cookingHistoryStore, loadCookingHistory } from './store/recipeStore.js'
   
   let currentView = 'list'
   let selectedRecipeId = null
@@ -12,6 +13,8 @@
   $: selectedRecipe = $recipeStore.find(r => r.id === selectedRecipeId) || null
   
   loadRecipes()
+  loadCategories()
+  loadCookingHistory()
   
   function handleViewRecipe(recipe) {
     selectedRecipeId = recipe.id
@@ -43,6 +46,10 @@
     selectedRecipesForShopping = event.detail
     currentView = 'shopping'
   }
+  
+  function handleManageCategories() {
+    currentView = 'categories'
+  }
 </script>
 
 <main>
@@ -59,6 +66,7 @@
     <RecipeList 
       on:view={(e) => handleViewRecipe(e.detail)}
       on:generateShoppingList={handleGenerateShoppingList}
+      on:manageCategories={handleManageCategories}
     />
   {:else if currentView === 'detail'}
     <RecipeDetail 
@@ -75,6 +83,11 @@
   {:else if currentView === 'shopping'}
     <ShoppingList 
       recipes={selectedRecipesForShopping}
+      on:back={handleBack}
+    />
+  {:else if currentView === 'categories'}
+    <CategoryManager 
+      recipes={$recipeStore}
       on:back={handleBack}
     />
   {/if}
