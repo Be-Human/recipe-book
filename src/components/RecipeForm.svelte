@@ -17,7 +17,13 @@
     coverImage: recipe?.coverImage || '',
     difficulty: recipe?.difficulty || '中等',
     servings: recipe?.servings || 2,
-    rating: recipe?.rating || null
+    rating: recipe?.rating || null,
+    nutrition: {
+      calories: recipe?.nutrition?.calories || '',
+      protein: recipe?.nutrition?.protein || '',
+      fat: recipe?.nutrition?.fat || '',
+      carbs: recipe?.nutrition?.carbs || ''
+    }
   }
   
   function isBase64Image(image) {
@@ -45,6 +51,12 @@
     formData.coverImage = ''
   }
   
+  function validateNutritionValue(value) {
+    if (value === '' || value === null || value === undefined) return true
+    const num = parseFloat(value)
+    return !isNaN(num) && num >= 0
+  }
+  
   function validate() {
     errors = {}
     
@@ -64,6 +76,19 @@
       errors.servings = '份量人数必须是大于0的数字'
     }
     
+    if (!validateNutritionValue(formData.nutrition.calories)) {
+      errors.nutrition_calories = '卡路里必须是大于等于0的数字'
+    }
+    if (!validateNutritionValue(formData.nutrition.protein)) {
+      errors.nutrition_protein = '蛋白质必须是大于等于0的数字'
+    }
+    if (!validateNutritionValue(formData.nutrition.fat)) {
+      errors.nutrition_fat = '脂肪必须是大于等于0的数字'
+    }
+    if (!validateNutritionValue(formData.nutrition.carbs)) {
+      errors.nutrition_carbs = '碳水化合物必须是大于等于0的数字'
+    }
+    
     const hasIngredients = formData.ingredients.some(ing => ing.name.trim())
     if (!hasIngredients) {
       errors.ingredients = '至少添加一种食材'
@@ -80,6 +105,12 @@
   function handleSubmit() {
     if (!validate()) return
     
+    function parseNutritionValue(value) {
+      if (value === '' || value === null || value === undefined) return null
+      const num = parseFloat(value)
+      return isNaN(num) ? null : num
+    }
+    
     const recipeData = {
       name: formData.name.trim(),
       category: formData.category,
@@ -90,7 +121,13 @@
       coverImage: formData.coverImage,
       difficulty: formData.difficulty,
       servings: formData.servings ? parseInt(formData.servings) : 2,
-      rating: formData.rating
+      rating: formData.rating,
+      nutrition: {
+        calories: parseNutritionValue(formData.nutrition.calories),
+        protein: parseNutritionValue(formData.nutrition.protein),
+        fat: parseNutritionValue(formData.nutrition.fat),
+        carbs: parseNutritionValue(formData.nutrition.carbs)
+      }
     }
     
     if (isEdit) {
@@ -337,6 +374,85 @@
       </section>
 
       <section class="form-section">
+        <h2 class="section-title">📊 营养信息（每份）</h2>
+        <p class="section-hint">可选：填写每份的营养数据，单位为克（g）</p>
+        
+        <div class="nutrition-grid">
+          <div class="form-group">
+            <label for="nutrition_calories" class="form-label">
+              🔥 卡路里 (kcal)
+            </label>
+            <input
+              type="number"
+              id="nutrition_calories"
+              bind:value={formData.nutrition.calories}
+              class="form-input {errors.nutrition_calories ? 'error' : ''}"
+              placeholder="例如：250"
+              min="0"
+              step="0.1"
+            />
+            {#if errors.nutrition_calories}
+              <span class="error-message">{errors.nutrition_calories}</span>
+            {/if}
+          </div>
+
+          <div class="form-group">
+            <label for="nutrition_protein" class="form-label">
+              💪 蛋白质 (g)
+            </label>
+            <input
+              type="number"
+              id="nutrition_protein"
+              bind:value={formData.nutrition.protein}
+              class="form-input {errors.nutrition_protein ? 'error' : ''}"
+              placeholder="例如：15"
+              min="0"
+              step="0.1"
+            />
+            {#if errors.nutrition_protein}
+              <span class="error-message">{errors.nutrition_protein}</span>
+            {/if}
+          </div>
+
+          <div class="form-group">
+            <label for="nutrition_fat" class="form-label">
+              🧈 脂肪 (g)
+            </label>
+            <input
+              type="number"
+              id="nutrition_fat"
+              bind:value={formData.nutrition.fat}
+              class="form-input {errors.nutrition_fat ? 'error' : ''}"
+              placeholder="例如：8"
+              min="0"
+              step="0.1"
+            />
+            {#if errors.nutrition_fat}
+              <span class="error-message">{errors.nutrition_fat}</span>
+            {/if}
+          </div>
+
+          <div class="form-group">
+            <label for="nutrition_carbs" class="form-label">
+              🍞 碳水化合物 (g)
+            </label>
+            <input
+              type="number"
+              id="nutrition_carbs"
+              bind:value={formData.nutrition.carbs}
+              class="form-input {errors.nutrition_carbs ? 'error' : ''}"
+              placeholder="例如：30"
+              min="0"
+              step="0.1"
+            />
+            {#if errors.nutrition_carbs}
+              <span class="error-message">{errors.nutrition_carbs}</span>
+            {/if}
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
         <div class="section-header">
           <h2 class="section-title">🥕 食材清单 <span class="required">*</span></h2>
           <button 
@@ -514,6 +630,23 @@
   }
 
   .section-header .section-title {
+    margin-bottom: 0;
+  }
+
+  .section-hint {
+    margin: -10px 0 20px 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .nutrition-grid .form-group {
     margin-bottom: 0;
   }
 
@@ -928,6 +1061,11 @@
     }
 
     .form-row {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .nutrition-grid {
       grid-template-columns: 1fr;
       gap: 15px;
     }
