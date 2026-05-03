@@ -67,6 +67,14 @@
     dispatch('manageCategories')
   }
   
+  function handleMealPlanner() {
+    dispatch('mealPlanner')
+  }
+  
+  function handleCookingStats() {
+    dispatch('cookingStats')
+  }
+  
   function handleExportAll() {
     exportAllRecipesAsJson($recipeStore)
   }
@@ -242,6 +250,22 @@
         title="管理分类"
       >
         ⚙️ 管理分类
+      </button>
+      
+      <button 
+        class="meal-planner-btn"
+        on:click={handleMealPlanner}
+        title="餐单计划"
+      >
+        📅 餐单计划
+      </button>
+      
+      <button 
+        class="cooking-stats-btn"
+        on:click={handleCookingStats}
+        title="烹饪统计"
+      >
+        📊 烹饪统计
       </button>
       
       <select bind:value={sortBy} class="sort-select">
@@ -549,6 +573,44 @@
   .manage-categories-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+  }
+
+  .meal-planner-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+  }
+
+  .meal-planner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+  }
+
+  .cooking-stats-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(108, 92, 231, 0.3);
+  }
+
+  .cooking-stats-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
   }
 
   .selection-controls {

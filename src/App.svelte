@@ -4,7 +4,17 @@
   import RecipeForm from './components/RecipeForm.svelte'
   import ShoppingList from './components/ShoppingList.svelte'
   import CategoryManager from './components/CategoryManager.svelte'
-  import { recipeStore, loadRecipes, categoryStore, loadCategories, cookingHistoryStore, loadCookingHistory } from './store/recipeStore.js'
+  import MealPlanner from './components/MealPlanner.svelte'
+  import CookingStats from './components/CookingStats.svelte'
+  import { 
+    recipeStore, 
+    loadRecipes, 
+    categoryStore, 
+    loadCategories, 
+    cookingHistoryStore, 
+    loadCookingHistory,
+    loadMealPlan 
+  } from './store/recipeStore.js'
   
   let currentView = 'list'
   let selectedRecipeId = null
@@ -15,6 +25,7 @@
   loadRecipes()
   loadCategories()
   loadCookingHistory()
+  loadMealPlan()
   
   function handleViewRecipe(recipe) {
     selectedRecipeId = recipe.id
@@ -50,6 +61,14 @@
   function handleManageCategories() {
     currentView = 'categories'
   }
+  
+  function handleMealPlanner() {
+    currentView = 'mealPlanner'
+  }
+  
+  function handleCookingStats() {
+    currentView = 'cookingStats'
+  }
 </script>
 
 <main>
@@ -67,6 +86,8 @@
       on:view={(e) => handleViewRecipe(e.detail)}
       on:generateShoppingList={handleGenerateShoppingList}
       on:manageCategories={handleManageCategories}
+      on:mealPlanner={handleMealPlanner}
+      on:cookingStats={handleCookingStats}
     />
   {:else if currentView === 'detail'}
     <RecipeDetail 
@@ -88,6 +109,14 @@
   {:else if currentView === 'categories'}
     <CategoryManager 
       recipes={$recipeStore}
+      on:back={handleBack}
+    />
+  {:else if currentView === 'mealPlanner'}
+    <MealPlanner 
+      on:back={handleBack}
+    />
+  {:else if currentView === 'cookingStats'}
+    <CookingStats 
       on:back={handleBack}
     />
   {/if}
