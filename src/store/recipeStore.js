@@ -3,6 +3,7 @@ import { writable } from 'svelte/store'
 const STORAGE_KEY = 'recipe-book-recipes'
 const CATEGORIES_KEY = 'recipe-book-categories'
 const COOKING_HISTORY_KEY = 'recipe-book-cooking-history'
+const MEAL_PLAN_KEY = 'recipe-book-meal-plan'
 
 export const DIFFICULTIES = ['简单', '中等', '困难']
 
@@ -440,4 +441,118 @@ export function parseImportedJson(jsonString) {
   } catch (e) {
     return { success: false, error: 'JSON 解析错误: ' + e.message }
   }
+}
+
+export const MEAL_TYPES = {
+  breakfast: { label: '早餐', icon: '🌅' },
+  lunch: { label: '午餐', icon: '☀️' },
+  dinner: { label: '晚餐', icon: '🌙' }
+}
+
+export function formatDateKey(date) {
+  const d = new Date(date)
+  return d.toISOString().split('T')[0]
+}
+
+export function getWeekDates(startDate = new Date()) {
+  const dates = []
+  const start = new Date(startDate)
+  const dayOfWeek = start.getDay()
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  start.setDate(start.getDate() + mondayOffset)
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(start)
+    date.setDate(start.getDate() + i)
+    dates.push({
+      date: date,
+      dateKey: formatDateKey(date),
+      dayName: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i],
+      isToday: formatDateKey(date) === formatDateKey(new Date())
+    })
+  }
+  return dates
+}
+
+function saveMealPlanToStorage(plan) {
+  try {
+    localStorage.setItem(MEAL_PLAN_KEY, JSON.stringify(plan))
+  } catch (e) {
+    console.error('Failed to save meal plan:', e)
+  }
+}
+
+const createMealPlanStore = () => {
+  const { subscribe, set, update } = writable({})
+
+  return {
+    subscribe,
+    load: () => {
+      try {
+        const stored = localStorage.getItem(MEAL_PLAN_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          set(parsed)
+        }
+      } catch (e) {
+        console.error('Failed to load meal plan:', e)
+        set({})
+      }
+    },
+    addMeal: (dateKey, mealType, recipeId) => {
+      update(plan => {
+        const newPlan = { ...plan }
+        if (!newPlan[dateKey]) {
+          newPlan[dateKey] = { breakfast: [], lunch: [], dinner: [] }
+        }
+        if (!newPlan[dateKey][mealType]) {
+          newPlan[dateKey][mealType] = []
+        }
+        if (!newPlan[dateKey][mealType].includes(recipeId)) {
+          newPlan[dateKey][mealType] = [...newPlan[dateKey][mealType], recipeId]
+        }
+        saveMealPlanToStorage(newPlan)
+        return newPlan
+      })
+    },
+    removeMeal: (dateKey, mealType, recipeId) => {
+      update(plan => {
+        const newPlan = { ...plan }
+        if (newPlan[dateKey] && newPlan[dateKey][mealType]) {
+          newPlan[dateKey][mealType] = newPlan[dateKey][mealType].filter(id => id !== recipeId)
+        }
+        saveMealPlanToStorage(newPlan)
+        return newPlan
+      })
+    },
+    clearDay: (dateKey) => {
+      update(plan => {
+        const newPlan = { ...plan }
+        delete newPlan[dateKey]
+        saveMealPlanToStorage(newPlan)
+        return newPlan
+      })
+    },
+    clearAll: () => {
+      set({})
+      try {
+        localStorage.removeItem(MEAL_PLAN_KEY)
+      } catch (e) {
+        console.error('Failed to clear meal plan:', e)
+      }
+    },
+    getDayPlan: (dateKey) => {
+      let plan = null
+      subscribe(currentPlan => {
+        plan = currentPlan[dateKey] || { breakfast: [], lunch: [], dinner: [] }
+      })()
+      return plan
+    }
+  }
+}
+
+export const mealPlanStore = createMealPlanStore()
+
+export function loadMealPlan() {
+  mealPlanStore.load()
 }
