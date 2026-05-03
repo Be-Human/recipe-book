@@ -80,12 +80,12 @@
     return $recipeStore.find(r => r.id === id)
   }
   
-  function getMealsForDay(dateKey) {
-    return mealPlan[dateKey] || { breakfast: [], lunch: [], dinner: [] }
+  function getMealsForDay(plan, dateKey) {
+    return plan[dateKey] || { breakfast: [], lunch: [], dinner: [] }
   }
   
-  function hasMealsForDay(dateKey) {
-    const dayMeals = getMealsForDay(dateKey)
+  function hasMealsForDay(plan, dateKey) {
+    const dayMeals = getMealsForDay(plan, dateKey)
     return dayMeals.breakfast.length > 0 || 
            dayMeals.lunch.length > 0 || 
            dayMeals.dinner.length > 0
@@ -136,7 +136,7 @@
             <span class="day-name">{day.dayName}</span>
             <span class="day-date">{formatDateDisplay(day.date)}</span>
           </div>
-          {#if hasMealsForDay(day.dateKey)}
+          {#if hasMealsForDay($mealPlanStore, day.dateKey)}
             <button 
               class="clear-day-btn"
               on:click={() => clearDay(day.dateKey)}
@@ -163,8 +163,8 @@
               </div>
               
               <div class="meal-recipes">
-                {#if getMealsForDay(day.dateKey)[mealType]?.length > 0}
-                  {#each getMealsForDay(day.dateKey)[mealType] as recipeId}
+                {#if getMealsForDay($mealPlanStore, day.dateKey)[mealType]?.length > 0}
+                  {#each getMealsForDay($mealPlanStore, day.dateKey)[mealType] as recipeId}
                     {#if getRecipeById(recipeId)}
                       <div class="recipe-item">
                         <span class="recipe-name">{getRecipeById(recipeId).name}</span>
